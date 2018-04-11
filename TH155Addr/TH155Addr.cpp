@@ -6,10 +6,13 @@
 #include <lmcons.h>
 #include <Winternl.h>
 #include "TH155AddrDef.hpp"
+#include "stdio.h"
 
 #define MINIMAL_USE_PROCESSHEAPSTRING
+#define MINIMAL_USE_PROCESSHEAPARRAY
 #include "MinimalPath.hpp"
 #include "MinimalIniFile.hpp"
+#include "MinimalArray.hpp"
 
 #define TH155_APIVERSION 1
 
@@ -159,6 +162,202 @@ public:
 	}
 };
 
+static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
+{
+	DWORD_PTR items;
+	DWORD_PTR itemVal;
+	DWORD_PTR titemVal;
+	DWORD_PTR itemVal2;
+	char  itemStr[SQSTRING_LIMIT];
+	DWORD itemType;
+	DWORD titemType;
+	DWORD itemNum;
+	DWORD itemLen;
+	DWORD itemIndex;
+	DWORD readSize;
+	BOOL ret;
+	DWORD j;
+	bool begin = false;
+
+
+
+	//if (GetAsyncKeyState(VK_F1) < 0) __asm mov ds:[0], 0xdeadbeef
+
+	HANDLE curProc = GetCurrentProcess();
+	// CoreBase から table を読み込む
+	ret = ::ReadProcessMemory(curProc, (LPVOID)((DWORD_PTR)GetModuleHandle(nullptr) + TH155CoreBase), &itemVal, sizeof itemVal, &readSize);
+	if (!ret) return false;
+	ret = ::ReadProcessMemory(curProc, (LPVOID)((DWORD_PTR)itemVal + 0x34), &itemVal, sizeof itemVal, &readSize);
+	if (!ret) return false;
+
+	itemType = 0x20;
+
+	StringSplitter tokenizer(path, '/');
+	LPCSTR pathToken;
+	int curlevel = -1;
+	//fprintf_s(fp, "Enum Proc %s\n",path);
+	while (pathToken = tokenizer.Next()) {
+		curlevel++;
+		switch (itemType & 0xFFFFF) {
+		case 0x20:	// TABLE
+					// Table の情報を読み込む
+			//fprintf_s(fp, "Enum Table%s\n",pathToken);
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x20), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x24), &itemNum, sizeof itemNum, &readSize);
+			if (!ret) return false;
+			// Table items を探索
+			for (j = 0; j < itemNum; ++j) {
+				// Table item key を読み込む
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x08), &itemType, sizeof itemType, &readSize);
+				if (!ret) return false;
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x0c), &itemVal, sizeof itemVal, &readSize);
+				if (!ret) return false;
+				
+				//  Table item key が文字列のときだけ受け付ける
+				if ((itemType & 0xFFFFF) == 0x10) {
+					//  Table item key を文字列として読み込む
+					ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x14), &itemLen, sizeof itemLen, &readSize);
+					if (!ret) return false;
+					// 常識的な長さの文字列だけ受け付ける
+					if (0 < itemLen && itemLen < SQSTRING_LIMIT) {
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x1C), itemStr, itemLen, &readSize);
+						if (!ret) return false;
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x00), &titemType, sizeof itemType, &readSize);
+						if (!ret) return false;
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x04), &titemVal, sizeof itemVal, &readSize);
+						if (!ret) return false;
+						itemStr[itemLen] = 0;
+						// Table item key の値が path のトークンと一致したら table item value を読み込む
+						if (level == curlevel)
+						{
+							//int bsize = strlen(path) + itemLen + 30;
+							{
+								//char* newpath = new char[1500];
+								fprintf_s(fp, "%s %s 0x%x %x %x \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), titemVal);
+							}
+						}
+						if (((titemType & 0xFFFFF) == 0x20 || (titemType & 0xFFFFF) == 0x8000) && level == curlevel)//Table 则继续向下遍历
+						{
+							Minimal::ProcessHeapArrayT<char> newpath(strlen(path) + itemLen + 2);
+							strcpy_s(newpath.GetRaw(), strlen(path) + itemLen + 2, path);
+							strcat_s(newpath.GetRaw(), strlen(path) + itemLen + 2, itemStr);
+							strcat_s(newpath.GetRaw(), strlen(path) + itemLen + 2, "/");
+							//fprintf_s(fp, "Enum Next %s\n", newpath.GetRaw());
+							EnumRTChildProc(newpath.GetRaw(), level + 1, fp);
+						}
+						if (::lstrcmpA(itemStr, pathToken) == 0) {
+							ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x00), &itemType, sizeof itemType, &readSize);
+							if (!ret) return false;
+							ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x04), &itemVal, sizeof itemVal, &readSize);
+							if (!ret) return false;
+							break;
+						}
+					}
+				}
+			}
+			if (j == itemNum) return false;
+			break;
+		case 0x40:	// ARRAY
+					// Array item の先頭アドレスと item 数を読み込む
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x18), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x1C), &itemNum, sizeof itemNum, &readSize);
+			if (!ret) return false;
+			// Path のトークンを Array item の index と見なして範囲チェック
+			itemIndex = StrToIntA(pathToken);
+			if (itemNum <= itemIndex) return false;
+			// Array item を読み込む
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + itemIndex * 0x08 + 0x00), &itemType, sizeof itemType, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + itemIndex * 0x08 + 0x04), &itemVal, sizeof itemVal, &readSize);
+			if (!ret) return false;
+			break;
+		case 0x8000:	// INSTANCE
+						// Instance members の情報を読み込む
+			//fprintf_s(fp, "Enum Instance\n");
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x1C), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + 0x18), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + 0x24), &itemNum, sizeof itemNum, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + 0x20), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			// Instance members を探索
+			for (j = 0; j < itemNum; ++j) {
+				// Instance member metadata value を読み込む
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x00), &itemType, sizeof itemType, &readSize);
+				if (!ret) return false;
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x04), &itemVal2, sizeof itemVal, &readSize);
+				if (!ret) return false;
+				// Instance member metadata value が有効なときだけ受け付ける
+				if ((itemType & 0xFFFFF) == 0x02) {
+					// Instance member metadata value から instance member type と instance member index を抽出
+					DWORD memberType = itemVal2 & 0xFF000000;
+					DWORD memberIndex = itemVal2 & 0x00FFFFFF;
+					// Instance member type が有効なときだけ受け付ける
+					if (memberType == 0x02000000) {
+						// Instance member metadata key を読み込む
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x08), &itemType, sizeof itemType, &readSize);
+						if (!ret) return false;
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x0c), &itemVal2, sizeof itemVal, &readSize);
+						if (!ret) return false;
+						// Instance member metadata key が文字列のときだけ受け付ける
+						if ((itemType & 0xFFFFF) == 0x10) {
+							//  Instance member metadata key を文字列として読み込む
+							ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal2 + 0x14), &itemLen, sizeof itemLen, &readSize);
+							if (!ret) return false;
+							// 常識的な長さの文字列だけ受け付ける
+							if (0 < itemLen && itemLen < SQSTRING_LIMIT) {
+								ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal2 + 0x1C), itemStr, itemLen, &readSize);
+								if (!ret) return false;
+								ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x00), &titemType, sizeof itemType, &readSize);
+								if (!ret) return false;
+								ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x04), &titemVal, sizeof itemVal, &readSize);
+								if (level == curlevel)
+								{
+									//int bsize = strlen(path) + itemLen + 30;
+									{
+										//char* newpath = new char[1500];
+										fprintf_s(fp, "%s %s %x %x \n", path, itemStr, (titemType & 0xFFFFF), titemVal);
+									}
+								}
+								if (((titemType & 0xFFFFF) == 0x20 || (titemType & 0xFFFFF) == 0x8000) && level == curlevel)//Table 则继续向下遍历
+								{
+									Minimal::ProcessHeapArrayT<char> newpath(strlen(path) + itemLen + 100);
+									strcpy_s(newpath.GetRaw(), strlen(path) + itemLen + 100, path);
+									if (level != 0)
+									{
+
+									}
+									strcat_s(newpath.GetRaw(), strlen(path) + itemLen + 100, itemStr);
+									strcat_s(newpath.GetRaw(), strlen(path) + itemLen + 100, "/");
+									//fprintf_s(fp, "Enum Next %s\n", newpath.GetRaw());
+									EnumRTChildProc(newpath.GetRaw(), level + 1, fp);
+								}
+								itemStr[itemLen] = 0;
+								// Instance member metadata key の値が path のトークンと一致したら instance member value を読み込む
+								if (::lstrcmpA(itemStr, pathToken) == 0) {
+									ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x00), &itemType, sizeof itemType, &readSize);
+									if (!ret) return false;
+									ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x04), &itemVal, sizeof itemVal, &readSize);
+									if (!ret) return false;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (j == itemNum) return false;
+			break;
+		}
+	}
+	ipcData.var.type = itemType;
+	ipcData.var.val = itemVal;
+	return true;
+}
 // CoreBase class instance 偵偁傞 SQVM instance 偺 Root Table 偐傜 巜掕偝傟偨僷僗偺 item value 傪 fetch
 static bool FindRTChildProc()
 {
@@ -328,6 +527,13 @@ LRESULT CALLBACK ipcWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		return FindRTChildProc() != false;
 	case WM_RTCHILDTOSTRING:
 		return RTChildToStringProc(wparam) != false;
+	case WM_RTCHILDTOSTRING + 1:
+	{
+		FILE* fp;
+		fp = fopen("result.txt", "w");
+		EnumRTChildProc("", 0, fp);
+		fclose(fp);
+	}
 	}
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
@@ -449,7 +655,30 @@ static BOOL CALLBACK TH155FindWindowProc(HWND hwnd, LPARAM param)
 	return TRUE;
 }
 
-static HWND TH155FindWindow()
+extern "C"
+void WINAPI VirtualPress(int keyid)
+{
+	SleepEx(200, true);
+	INPUT w;
+	memset(&w, 0, sizeof(INPUT));
+	int i = MapVirtualKey(keyid, 0);
+	w.type = INPUT_KEYBOARD;
+	w.ki.wVk = keyid;
+	w.ki.wScan = i;
+	w.ki.dwFlags = KEYEVENTF_SCANCODE;
+	//SendInput(1, &w, sizeof(w));
+
+	keybd_event(keyid, i, 0, 1);
+	SleepEx(1000, true);
+	keybd_event(keyid, i, KEYEVENTF_KEYUP, 1);
+	w.ki.dwFlags = KEYEVENTF_KEYUP | KEYEVENTF_SCANCODE;
+	//SendInput(1, &w, sizeof(w));
+	SleepEx(200, true);
+
+}
+
+extern "C"
+HWND WINAPI TH155FindWindow()
 {
 	HWND hwndResult = nullptr;
 	if (TH155WindowCaptionCount > 0) {
@@ -589,6 +818,35 @@ extern "C"
 TH155STATE WINAPI TH155AddrGetState()
 {
 	return TH155State;
+}
+
+extern "C"
+int WINAPI TH155GetRTChildInt(LPCSTR param)
+{
+	DWORD childType, childVal;
+	if (::FindRTChild(param, childType, childVal) && (childType & 0xFFFFF) == 0x02) {
+		return childVal;
+	}
+	return -1;
+}
+
+extern "C"
+int WINAPI TH155GetRTChildStr(LPCSTR param,LPSTR result)
+{
+	DWORD childType, childVal;
+	char paramBuff[SQSTRING_LIMIT] = "Failed";
+	if (::FindRTChild(param, childType, childVal) && (childType & 0xFFFFF) == 0x10 && RTChildToString(childVal, paramBuff, sizeof(paramBuff))) {
+		memcpy(result, paramBuff, SQSTRING_LIMIT);
+		return 0;
+	}
+	memcpy(result, paramBuff, SQSTRING_LIMIT);
+	return 1;
+}
+
+extern "C"
+int WINAPI TH155EnumRTCHild()
+{
+	return SendMessage(ipcWindow, WM_FINDRTCHILD + 2, 0, 0);
 }
 
 extern "C"

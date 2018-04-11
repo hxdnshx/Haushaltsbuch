@@ -3,3 +3,8 @@ EXPORTS
 	TH155AddrCleanup
 	TH155AddrGetState
 	TH155AddrGetParam
+	TH155GetRTChildStr
+	TH155EnumRTCHild
+	TH155GetRTChildInt
+	TH155FindWindow
+	VirtualPress
