@@ -8,3 +8,5 @@ EXPORTS
 	TH155GetRTChildInt
 	TH155FindWindow
 	VirtualPress
+	VirtualPress_Extra
+	TH155IsConnect

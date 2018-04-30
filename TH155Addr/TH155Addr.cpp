@@ -663,7 +663,8 @@ void WINAPI VirtualPress(int keyid)
 	memset(&w, 0, sizeof(INPUT));
 	int i = MapVirtualKey(keyid, 0);
 	w.type = INPUT_KEYBOARD;
-	w.ki.wVk = keyid;
+	w.ki.time = 0;
+	w.ki.wVk = 0;
 	w.ki.wScan = i;
 	w.ki.dwFlags = KEYEVENTF_SCANCODE;
 	//SendInput(1, &w, sizeof(w));
@@ -675,6 +676,31 @@ void WINAPI VirtualPress(int keyid)
 	//SendInput(1, &w, sizeof(w));
 	SleepEx(200, true);
 
+}
+
+extern "C"
+void WINAPI VirtualPress_Extra(int keyid)
+{
+	
+	SleepEx(50, true);
+	INPUT ip;
+	//Set up the INPUT structure
+	ip.type = INPUT_KEYBOARD;
+	ip.ki.time = 60;
+	ip.ki.wVk = 0; //We're doing scan codes instead
+	ip.ki.dwExtraInfo = 0;
+
+	//This let's you do a hardware scan instead of a virtual keypress
+	ip.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_EXTENDEDKEY;
+	ip.ki.wScan = MapVirtualKey(keyid, 0);  //Set a unicode character to use (A)
+
+						 //Send the press
+	SendInput(1, &ip, sizeof(INPUT));
+	SleepEx(50, true);
+	//Prepare a keyup event
+	ip.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP | KEYEVENTF_EXTENDEDKEY;
+	SendInput(1, &ip, sizeof(INPUT));
+	SleepEx(50, true);
 }
 
 extern "C"
@@ -786,6 +812,16 @@ static DWORD WINAPI TH155AddrWorkerThread(LPVOID)
 }
 
 extern "C"
+bool WINAPI TH155IsConnect()
+{
+	DWORD childType, childVal;
+	if ((::FindRTChild("network/inst", childType, childVal) && (childType & 0x8000) != 0)) {
+		return true;
+	}
+	return false;
+}
+
+extern "C"
 BOOL WINAPI TH155AddrStartup(int APIVersion, HWND callbackWnd, int callbackMsg)
 {
 	if (isClientInitialized) return FALSE;
@@ -824,7 +860,7 @@ extern "C"
 int WINAPI TH155GetRTChildInt(LPCSTR param)
 {
 	DWORD childType, childVal;
-	if (::FindRTChild(param, childType, childVal) && (childType & 0xFFFFF) == 0x02) {
+	if (::FindRTChild(param, childType, childVal) && ((childType & 0xFFFFF) == 0x02 || (childType & 0xFFFFF) == 0x08)) {
 		return childVal;
 	}
 	return -1;
