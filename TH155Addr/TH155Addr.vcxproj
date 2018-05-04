@@ -48,8 +48,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)MinimalRT;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)MinimalRT\$(IntDir);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)..\MinimalRT;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\MinimalRT\$(IntDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

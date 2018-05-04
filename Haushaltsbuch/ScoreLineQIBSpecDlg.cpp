@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "Haushaltsbuch.hpp"
 #include "QIBSettings.hpp"
 #include "ColoredRecordView.hpp"
@@ -38,12 +38,12 @@ enum {
 #define PROP_TRDIRLEFT _T("SCORELINE.TRDIRLEFT")
 
 static const SLVCOLUMN s_listColumns[] = {
-	{ LVCFMT_LEFT,   80, _T("–¼‘O"),   SLVSORT_LPARAM },
-	{ LVCFMT_RIGHT,  55, _T("‘Îí”"), SLVSORT_INTEGER },
-	{ LVCFMT_RIGHT,  55, _T("Ÿ"),     SLVSORT_INTEGER },
-	{ LVCFMT_RIGHT,  55, _T("•‰"),     SLVSORT_INTEGER },
-	{ LVCFMT_RIGHT,  55, _T("Ÿ—¦"),   SLVSORT_INTEGER },
-	{ LVCFMT_RIGHT,  60, _T("‰ß‹50"), SLVSORT_INTEGEREX }
+	{ LVCFMT_LEFT,   80, _T("åå­—"),   SLVSORT_LPARAM },
+	{ LVCFMT_RIGHT,  55, _T("å¯¹æˆ˜æ€»æ•°"), SLVSORT_INTEGER },
+	{ LVCFMT_RIGHT,  55, _T("èƒœ"),     SLVSORT_INTEGER },
+	{ LVCFMT_RIGHT,  55, _T("è´Ÿ"),     SLVSORT_INTEGER },
+	{ LVCFMT_RIGHT,  55, _T("èƒœç‡"),   SLVSORT_INTEGER },
+	{ LVCFMT_RIGHT,  60, _T("è¿‡å»50æˆ˜"), SLVSORT_INTEGEREX }
 };
 
 typedef struct {
@@ -60,30 +60,30 @@ static void ScoreLineQIBSpecDialog_RefleshUnit(HWND listWnd, int i, int win, int
 	item.mask = LVIF_TEXT;
 
 	int sum = win + lose;
-	// ‘Îí”
+	// å¯¾æˆ¦æ•°
 	itemstr = Formatter(_T("%d"), sum);
 	item.iItem = i;
 	item.iSubItem = 1;
 	item.pszText = static_cast<LPTSTR>(itemstr);
 	ListView_SetItem(listWnd, &item);
-	// Ÿ‚¿
+	// å‹ã¡
 	itemstr = Formatter(_T("%d"), win);
 	item.iSubItem = 2;
 	item.pszText = static_cast<LPTSTR>(itemstr);
 	ListView_SetItem(listWnd, &item);
-	// •‰‚¯
+	// è² ã‘
 	itemstr = Formatter(_T("%d"), lose);
 	item.iSubItem = 3;
 	item.pszText = static_cast<LPTSTR>(itemstr);
 	ListView_SetItem(listWnd, &item);
-	// Ÿ—¦
+	// å‹ç‡
 	int winningRate = ::MulDiv(win, g_winningRatePrecision, sum ? sum : 1);
 	itemstr = Formatter((g_highPrecisionRateEnabled ? _T("%d.%01d%%") : _T("%d%%")), winningRate / g_winningRateFp, winningRate % g_winningRateFp);
 	item.iSubItem = 4;
 	item.pszText = static_cast<LPTSTR>(itemstr);
 	ListView_SetItem(listWnd, &item);
 
-	// ƒpƒ‰ƒ[ƒ^‚ÌŸ—¦ƒtƒB[ƒ‹ƒh‚ğXV
+	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å‹ç‡ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚’æ›´æ–°
 	item.mask = LVIF_PARAM;
 	item.iSubItem = 0;
 	ListView_GetItem(listWnd, &item);
@@ -107,8 +107,8 @@ static void ScoreLineQIBSpecDialog_Reflesh(HWND hDlg)
 
 	HWND listWnd = GetDlgItem(hDlg, IDC_LIST_SCORELINE);
 
-	// €–Ú‚ÌLPARAM‚©‚çIDƒ}ƒbƒv‚ğ“®“I¶¬
-	// GetPropÃ“IƒXƒ^ƒCƒ‹‚Íƒ\[ƒg‚âŒãˆ—‚ª–Ê“|‚­‚³‚¢
+	// é …ç›®ã®LPARAMã‹ã‚‰IDãƒãƒƒãƒ—ã‚’å‹•çš„ç”Ÿæˆ
+	// GetPropé™çš„ã‚¹ã‚¿ã‚¤ãƒ«ã¯ã‚½ãƒ¼ãƒˆã‚„å¾Œå‡¦ç†ãŒé¢å€’ãã•ã„
 	LVITEM lvitem;
 	lvitem.mask = LVIF_PARAM;
 	lvitem.iSubItem = 0;
@@ -136,7 +136,7 @@ static void ScoreLineQIBSpecDialog_Reflesh(HWND hDlg)
 	LVITEM item;
 	item.mask = LVIF_TEXT;
 
-	// ‰ß‹50íŸ—¦(ŒÂ•Ê)
+	// éå»50æˆ¦å‹ç‡(å€‹åˆ¥)
 	{
 		Minimal::ProcessHeapString itemstr;
 
@@ -165,7 +165,7 @@ static void ScoreLineQIBSpecDialog_Reflesh(HWND hDlg)
 		}
 	}
 
-	// ‰ß‹30/50/100íŸ—¦
+	// éå»30/50/100æˆ¦å‹ç‡
 	int limits[] = { 30, 50, 100 };
 	for (int h = 0; h < _countof(limits); ++h) {
 		Minimal::ProcessHeapString itemstr;
@@ -196,7 +196,7 @@ static void ScoreLineQIBSpecDialog_Reflesh(HWND hDlg)
 
 exception:
 	ScoreLine_Leave(true);
-	MessageBox(hDlg, _T("íÑ•\¦‚ÌXV‚É¸”s‚µ‚Ü‚µ‚½"), NULL, MB_OK | MB_ICONSTOP);
+	MessageBox(hDlg, _T("æˆ˜ç»©æ›´æ–°å¤±è´¥ã€‚"), NULL, MB_OK | MB_ICONSTOP);
 }
 
 static void SysMenu_OnClose(HWND hDlg, int x, int y)
@@ -279,11 +279,11 @@ static LRESULT ScoreLineView_OnDoubleClick(HWND hParent, HWND hwnd)
 	hti.flags = LVHT_ONITEMLABEL;
 	::GetCursorPos(&hti.pt);
 	::ScreenToClient(hwnd, &hti.pt);
-	// ƒqƒbƒg
+	// ãƒ’ãƒƒãƒˆ
 	if (ListView_SubItemHitTest(hwnd, &hti) != -1) {
-		// ƒLƒƒƒ‰•”•ª‚ÌƒNƒŠƒbƒN
+		// ã‚­ãƒ£ãƒ©éƒ¨åˆ†ã®ã‚¯ãƒªãƒƒã‚¯
 		if (hti.iItem >= 0 && hti.iItem < TH155AddrGetCharCount()) {
-			// Ÿ‚¿‚©•‰‚¯
+			// å‹ã¡ã‹è² ã‘
 			if (hti.iSubItem == 2 || hti.iSubItem == 3) {
 				LVITEM lvitem;
 				lvitem.mask = LVIF_PARAM;
@@ -340,9 +340,9 @@ static LRESULT ScoreLineView_OnRDoubleClick(HWND hParent, HWND hwnd)
 	hti.flags = LVHT_ONITEMLABEL;
 	::GetCursorPos(&hti.pt);
 	::ScreenToClient(hwnd, &hti.pt);
-	// ƒqƒbƒg
+	// ãƒ’ãƒƒãƒˆ
 	if (ListView_SubItemHitTest(hwnd, &hti) != -1) {
-		// Ÿ‚¿‚©•‰‚¯
+		// å‹ã¡ã‹è² ã‘
 		if (hti.iSubItem == 2 || hti.iSubItem == 3) {
 			LVITEM lvitem;
 			lvitem.mask = LVIF_PARAM;
@@ -351,7 +351,7 @@ static LRESULT ScoreLineView_OnRDoubleClick(HWND hParent, HWND hwnd)
 
 			auto fltCustom = reinterpret_cast<SCORELINE_FILTER_DESC *>(GetProp(hParent, PROP_FILTER));
 			if (!fltCustom) {
-				::MessageBox(NULL, _T("íÑ‚Ì•ÏX‚É¸”s‚µ‚Ü‚µ‚½"), NULL, MB_OK);
+				::MessageBox(NULL, _T("æˆ˜ç»©æ›´æ–°å¤±è´¥ã€‚"), NULL, MB_OK);
 				return FALSE;
 			}
 			SCORELINE_FILTER_DESC filterDesc = *fltCustom;
@@ -411,14 +411,14 @@ static BOOL ScoreLineQIBSpecDialog_InitListView(HWND hDlg)
 	ListView_InsertItem(listWnd, &item);
 
 	item.mask = LVIF_TEXT | LVIF_PARAM; item.iItem++; LVPARAMFIELD(item.lParam).charId++;
-	item.pszText = _T("‘‡");
+	item.pszText = _T("æ€»è®¡");
 	ListView_InsertItem(listWnd, &item);
 
-	item.pszText = _T("‰ß‹30í"); item.iItem++; LVPARAMFIELD(item.lParam).charId++; 
+	item.pszText = _T("æœ€è¿‘30æˆ˜"); item.iItem++; LVPARAMFIELD(item.lParam).charId++; 
 	ListView_InsertItem(listWnd, &item);
-	item.pszText = _T("‰ß‹50í"); item.iItem++; LVPARAMFIELD(item.lParam).charId++; 
+	item.pszText = _T("æœ€è¿‘50æˆ˜"); item.iItem++; LVPARAMFIELD(item.lParam).charId++; 
 	ListView_InsertItem(listWnd, &item);
-	item.pszText = _T("‰ß‹100í"); item.iItem++; LVPARAMFIELD(item.lParam).charId++;
+	item.pszText = _T("æœ€è¿‘100æˆ˜"); item.iItem++; LVPARAMFIELD(item.lParam).charId++;
 	ListView_InsertItem(listWnd, &item);
 
 	return TRUE;
@@ -428,7 +428,7 @@ static void ScoreLineQIBSpecDialog_InitCaption(HWND hDlg, SCORELINE_FILTER_DESC 
 {
 	Minimal::ProcessHeapString title;
 
-	title = _T("Ú× - ");
+	title = _T("è¯¦ç»† - ");
 	SYSTEMTIME loctime;
 	for (int i = 1; i < SCORELINE_FILTER__MAX; i <<= 1) {
 		switch(fltCustom.mask & i) {
@@ -478,18 +478,18 @@ static void ScoreLineQIBSpecDialog_InitCaption(HWND hDlg, SCORELINE_FILTER_DESC 
 				::FileTimeToSystemTime(
 					(LPFILETIME)&fltCustom.t_begin, &loctime);
 				title += 
-					Formatter(_T("%d/%02d/%02d‚©‚ç"), 
+					Formatter(_T("ä»%d/%02d/%02då¼€å§‹"), 
 						loctime.wYear, loctime.wMonth, loctime.wDay);
 				break;
 			case SCORELINE_FILTER__TIMESTAMP_END:
 				::FileTimeToSystemTime(
 					(LPFILETIME)&fltCustom.t_end, &loctime);
 				title += 
-					Formatter(_T("%d/%02d/%02d‚Ü‚Å"), 
+					Formatter(_T("åˆ°%d/%02d/%02dä¸ºæ­¢"), 
 						loctime.wYear, loctime.wMonth, loctime.wDay);
 				break;
 			case SCORELINE_FILTER__LIMIT:
-				title += Formatter(_T("Å‹ß%dí"), fltCustom.limit);
+				title += Formatter(_T("æœ€è¿‘%dæˆ˜"), fltCustom.limit);
 				break;
 		}
 	}
@@ -499,15 +499,15 @@ static void ScoreLineQIBSpecDialog_InitCaption(HWND hDlg, SCORELINE_FILTER_DESC 
 static void ScoreLineQIBSpecDialog_InitSysMenu(HWND hDlg, HMENU hSysMenu)
 {
 	int itemIndex = 0;
-	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_REFLESH, _T("ÅV‚Ìî•ñ‚ÉXV"));
+	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_REFLESH, _T("åˆ·æ–°"));
 	::InsertMenu(hSysMenu, itemIndex++, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
-	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_UNDOSCR, _T("Œ³‚É–ß‚·"));
-	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_REDOSCR, _T("‚â‚è’¼‚µ"));
+	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_UNDOSCR, _T("æ’¤é”€"));
+	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_REDOSCR, _T("é‡åš"));
 	::InsertMenu(hSysMenu, itemIndex++, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
-	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_RNKPROF, _T("‘Šèƒvƒƒtƒ@ƒCƒ‹•\"));
-	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_TRKRECD, _T("‰ß‹‘Îí—š—ğ•\"));
+	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_RNKPROF, _T("å¯¹æ‰‹åˆ—è¡¨"));
+	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_TRKRECD, _T("å¯¹æˆ˜è®°å½•æŸ¥è¯¢"));
 	::InsertMenu(hSysMenu, itemIndex++, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
-	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_CLIPBRD, _T("ƒNƒŠƒbƒvƒ{[ƒh‚É‘—‚é"));
+	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_CLIPBRD, _T("å¤åˆ¶åˆ°å‰ªè´´æ¿"));
 	::InsertMenu(hSysMenu, itemIndex++, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
 }
 

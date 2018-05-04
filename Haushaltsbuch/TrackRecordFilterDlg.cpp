@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "Haushaltsbuch.hpp"
 #include "dlgcommon.hpp"
 #include "TrackRecordFilterDlg.hpp"
@@ -79,7 +79,7 @@ static void TrackRecordFilterDialog_OnOK(HWND hDlg)
 		filterDesc.mask |= SCORELINE_FILTER__P1ID;
 		filterDesc.p1id = ::SendDlgItemMessage(hDlg, IDC_COMBO_P1CHAR, CB_GETCURSEL, 0, 0);
 		if (filterDesc.p1id < 0 || filterDesc.p1id >= TH155AddrGetCharCount()) {
-			::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("è§’è‰²ç¼–å·é”™è¯¯ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -88,7 +88,7 @@ static void TrackRecordFilterDialog_OnOK(HWND hDlg)
 		filterDesc.mask |= SCORELINE_FILTER__P1SID;
 		filterDesc.p1sid = ::SendDlgItemMessage(hDlg, IDC_COMBO_P1CHAR_SLAVE, CB_GETCURSEL, 0, 0);
 		if (filterDesc.p1sid < 0 || filterDesc.p1sid >= TH155AddrGetCharCount()) {
-			::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("è§’è‰²ç¼–å·é”™è¯¯ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -97,7 +97,7 @@ static void TrackRecordFilterDialog_OnOK(HWND hDlg)
 		filterDesc.mask |= SCORELINE_FILTER__P2ID;
 		filterDesc.p2id = ::SendDlgItemMessage(hDlg, IDC_COMBO_P2CHAR, CB_GETCURSEL, 0, 0);
 		if (filterDesc.p2id < 0 || filterDesc.p2id >= TH155AddrGetCharCount()) {
-			::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("è§’è‰²ç¼–å·é”™è¯¯ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -106,7 +106,7 @@ static void TrackRecordFilterDialog_OnOK(HWND hDlg)
 		filterDesc.mask |= SCORELINE_FILTER__P2SID;
 		filterDesc.p2sid = ::SendDlgItemMessage(hDlg, IDC_COMBO_P2CHAR_SLAVE, CB_GETCURSEL, 0, 0);
 		if (filterDesc.p2sid < 0 || filterDesc.p2sid >= TH155AddrGetCharCount()) {
-			::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("è§’è‰²ç¼–å·é”™è¯¯ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -128,7 +128,7 @@ static void TrackRecordFilterDialog_OnOK(HWND hDlg)
 		::SystemTimeToFileTime(&sysTime, reinterpret_cast<LPFILETIME>(&filterDesc.t_end));
 
 		if ((filterDesc.mask & SCORELINE_FILTER__TIMESTAMP_BEGIN) && filterDesc.t_begin > filterDesc.t_end) {
-			::MessageBox(hDlg, _T("n“_‚ÍI“_‚æ‚è‘O‚É‚µ‚Ä‚­‚¾‚³‚¢"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("æ—¶é—´èµ·å§‹ç‚¹ä¸åº”æ¯”ç»ˆç‚¹æ™šã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -137,7 +137,7 @@ static void TrackRecordFilterDialog_OnOK(HWND hDlg)
 		filterDesc.mask |= SCORELINE_FILTER__LIMIT;
 		filterDesc.limit = SendDlgItemMessage(hDlg, IDC_SPIN_TRMAX, UDM_GETPOS, 0, 0);
 		if (filterDesc.limit < 1) {
-			::MessageBox(hDlg, _T("Œ”‚Í‚PŒˆÈã‚É‚µ‚Ä‚­‚¾‚³‚¢"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("è®°å½•ä¸ªæ•°è‡³å°‘è¦1æ¡ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 

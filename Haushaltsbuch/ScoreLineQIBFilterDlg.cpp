@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "DlgCommon.hpp"
 #include "Haushaltsbuch.hpp"
 #include "ScoreLineQIBFilterDlg.hpp"
@@ -58,7 +58,7 @@ static void ScoreLineQIBFilterDialog_OnOK(HWND hDlg)
 		filterDesc.mask |= SCORELINE_FILTER__P1SID;
 		filterDesc.p1sid = ::SendDlgItemMessage(hDlg, IDC_COMBO_P1CHAR_SLAVE, CB_GETCURSEL, 0, 0);
 		if (filterDesc.p1sid < 0 || filterDesc.p1sid >= TH155AddrGetCharCount()) {
-			::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("é”™è¯¯çš„P1å‰¯æœºè§’è‰²ç¼–å·ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -66,7 +66,7 @@ static void ScoreLineQIBFilterDialog_OnOK(HWND hDlg)
 		filterDesc.mask |= SCORELINE_FILTER__P2SID;
 		filterDesc.p2sid = ::SendDlgItemMessage(hDlg, IDC_COMBO_P2CHAR_SLAVE, CB_GETCURSEL, 0, 0);
 		if (filterDesc.p2sid < 0 || filterDesc.p2sid >= TH155AddrGetCharCount()) {
-			::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("é”™è¯¯çš„P2å‰¯æœºè§’è‰²ç¼–å·ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -88,7 +88,7 @@ static void ScoreLineQIBFilterDialog_OnOK(HWND hDlg)
 		::SystemTimeToFileTime(&sysTime, reinterpret_cast<LPFILETIME>(&filterDesc.t_end));
 
 		if ((filterDesc.mask & SCORELINE_FILTER__TIMESTAMP_BEGIN) && filterDesc.t_begin > filterDesc.t_end) {
-			::MessageBox(hDlg, _T("n“_‚ÍI“_‚æ‚è‘O‚É‚µ‚Ä‚­‚¾‚³‚¢"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("å§‹ç‚¹ã¯çµ‚ç‚¹ã‚ˆã‚Šå‰ã«ã—ã¦ãã ã•ã„"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}

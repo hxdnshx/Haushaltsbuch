@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "Mainwnd.hpp"
 #include "Haushaltsbuch.hpp"
 #include "ScoreLine.hpp"
@@ -25,7 +25,7 @@
 #define UM_NOTIFYICON (WM_APP + 1)
 #define UM_TH155CALLBACK (WM_APP + 10)
 
-// íÑ‹L˜^‚ÌƒNƒŠƒbƒvƒ{[ƒh“]‘—í•Ê
+// æˆ¦ç¸¾è¨˜éŒ²æ™‚ã®ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰è»¢é€ç¨®åˆ¥
 enum INFOTRANSTYPE {
 	INFOTRANS_NONE = 0,
 	INFOTRANS_PROFILE,
@@ -33,7 +33,7 @@ enum INFOTRANSTYPE {
 	INFOTRANS_MAX
 };
 
-// ’Ê’mƒAƒCƒRƒ“‚Ìí•Ê
+// é€šçŸ¥ã‚¢ã‚¤ã‚³ãƒ³ã®ç¨®åˆ¥
 enum NOTIFYICONTYPE {
 	NOTIFYICON_DISABLED,
 	NOTIFYICON_ENABLED,
@@ -67,7 +67,7 @@ void MainWindow_ChangeNotifyIcon(NOTIFYICONTYPE type)
 
 static void TH155_OnKO()
 {
-	/* “Ç‚İæ‚è */
+	/* èª­ã¿å–ã‚Š */
 	int ret;
 	Minimal::ProcessHeapStringA p1name;
 	Minimal::ProcessHeapStringA p2name;
@@ -80,7 +80,7 @@ static void TH155_OnKO()
 	int p1sid = TH155AddrGetParam(TH155PARAM_P1CHAR_SLAVE);
 	int p2id  = TH155AddrGetParam(TH155PARAM_P2CHAR);
 	int p2sid = TH155AddrGetParam(TH155PARAM_P2CHAR_SLAVE);
-	/* è‡’lƒ`ƒFƒbƒN */
+	/* é–¾å€¤ãƒã‚§ãƒƒã‚¯ */
 	if (p1win < 0 || p2win > 2 || p1win < 0 || p2win > 2 || (p1win != 2 && p2win != 2)) return;
 	if (p1id < 0 || p1id >= TH155AddrGetCharCount() || p2id < 0 || p2id >= TH155AddrGetCharCount()) return;
 	if (p1sid < 0 || p1sid >= TH155AddrGetCharCount() || p2sid < 0 || p2sid >= TH155AddrGetCharCount()) return;
@@ -92,7 +92,7 @@ static void TH155_OnKO()
 	SystemTimeToFileTime(&loctime, reinterpret_cast<LPFILETIME>(&item.timestamp));
 	int isClient  = TH155AddrGetParam(TH155PARAM_ISNETCLIENT);
 	if (isClient == 0) {
-		/* ©•ª‚ğ¶‘¤‚É‚·‚é */
+		/* è‡ªåˆ†ã‚’å·¦å´ã«ã™ã‚‹ */
 		item.p1id = p1id;
 		item.p1sid = p1sid;
 		item.p2id = p2id;
@@ -103,7 +103,7 @@ static void TH155_OnKO()
 		::lstrcpyA(item.p2name, p2name.GetRaw());
 	}
 	else {
-		/* ©•ª‚ğ‰E‘¤‚É‚·‚é */
+		/* è‡ªåˆ†ã‚’å³å´ã«ã™ã‚‹ */
 		item.p1id = p2id;
 		item.p1sid = p2sid;
 		item.p2id = p1id;
@@ -114,7 +114,7 @@ static void TH155_OnKO()
 		::lstrcpyA(item.p2name, p1name.GetRaw());
 	}
 
-	/* ‘Îí•\‚ğXV */
+	/* å¯¾æˆ¦è¡¨ã‚’æ›´æ–° */
 	ScoreLine_Enter();
 	bool failed = !ScoreLine_Append(&item);
 	ScoreLine_Leave(failed);
@@ -122,7 +122,7 @@ static void TH155_OnKO()
 		Memento_Append(MEMENTO_CMD_APPEND, &item);
 		::PostMessage(s_hScoreLineDlg, UM_UPDATESCORELINE, 0, 0);
 
-		/* Œ‹‰Ê‚ğƒNƒŠƒbƒvƒ{[ƒh‚É“]‘— */
+		/* çµæœã‚’ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«è»¢é€ */
 		switch (s_infoTransfer) {
 		case INFOTRANS_PROFILE:
 			SetClipboardText(MinimalA2T(item.p2name), static_cast<DWORD>(-1));
@@ -140,19 +140,26 @@ static void TH155_OnKO()
 
 static void TH155_OnStateChange(WORD param1, bool autorun)
 {
+	static WORD prev_state = TH155STATE_NOTFOUND;
 	switch (param1) {
 	case TH155STATE_NOTFOUND:
 		MainWindow_ChangeNotifyIcon(NOTIFYICON_DISABLED);
 		if (autorun) {
 			Autorun_Enter(s_nid.hWnd, _T("ReportTool"));
 			Autorun_Exit(s_nid.hWnd, _T("GameProgram"));
+			Autorun_Exit(s_nid.hWnd, _T("SteamGame"));
 		}
 		break;
 	case TH155STATE_WAITFORNETBATTLE:
+		if(prev_state == TH155STATE_NETBATTLE)
+		{
+			Autorun_Enter(s_nid.hWnd, _T("ReportTool"));
+		}
 	case TH155STATE_NETBATTLE:
 		MainWindow_ChangeNotifyIcon(NOTIFYICON_ENABLED);
 		break;
 	}
+	prev_state = param1;
 }
 
 static void TH155_OnParamChange(WORD param1, LPARAM param2)
@@ -160,7 +167,7 @@ static void TH155_OnParamChange(WORD param1, LPARAM param2)
 	switch (param1) {
 	case TH155PARAM_P1WIN:
 	case TH155PARAM_P2WIN:
-		if (param2 == 2) { /* Œˆ’…“I‚È */
+		if (param2 == 2) { /* æ±ºç€çš„ãª */
 			TH155_OnKO();
 		}
 		break;
@@ -171,10 +178,10 @@ static void MainWindow_OnTH155Callback(HWND hwnd, WORD Msg, WORD param1, LPARAM 
 {
 	if (s_disableTH155Callback) return;
 	switch (Msg) {
-	case TH155MSG_STATECHANGE: /* ƒXƒe[ƒg•Ï‰» */
+	case TH155MSG_STATECHANGE: /* ã‚¹ãƒ†ãƒ¼ãƒˆå¤‰åŒ– */
 		TH155_OnStateChange(param1, true);
 		break;
-	case TH155MSG_PARAMCHANGE: /* ƒpƒ‰ƒ[ƒ^•Ï‰» */
+	case TH155MSG_PARAMCHANGE: /* ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰åŒ– */
 		TH155_OnParamChange(param1, param2);
 		break;
 	}
@@ -243,7 +250,7 @@ static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 		ofn.lpstrFilter = _T("TrackRecord Database (*.db)\0*.db\0");
 		ofn.Flags = OFN_CREATEPROMPT | OFN_NOCHANGEDIR;
 		do {
-			::MessageBox(hwnd, _T("ƒvƒƒtƒ@ƒCƒ‹‚Ìƒ}ƒbƒsƒ“ƒO‚É¸”s‚µ‚Ü‚µ‚½B"), NULL, MB_OK | MB_ICONSTOP);
+			::MessageBox(hwnd, _T("æ¡£æ¡ˆæ˜ å°„å¤±è´¥ã€‚"), NULL, MB_OK | MB_ICONSTOP);
 			if (!::GetOpenFileName(&ofn)) return FALSE;
 			ScoreLine_SetPath(profPathBuff);
 		} while(!ScoreLine_Open(true));
@@ -299,7 +306,12 @@ static BOOL MainWindow_OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
 	Autorun_CheckMenuItem(s_hPopupMenu, _T("ReportTool"), ID_AUTORUN_REPORTTOOL_FLIPENABLED);
 	Autorun_CheckMenuItem(s_hPopupMenu, _T("GameProgram"), ID_AUTORUN_GAMEPROGRAM_FLIPENABLED);
-	if (::GetAsyncKeyState(VK_PAUSE) >= 0 && TH155AddrGetState() == TH155STATE_NOTFOUND) Autorun_Enter(hwnd, _T("GameProgram"));
+	Autorun_CheckMenuItem(s_hPopupMenu, _T("SteamGame"), ID_AUTORUN_STEAM);
+	if (::GetAsyncKeyState(VK_PAUSE) >= 0 && TH155AddrGetState() == TH155STATE_NOTFOUND)
+	{
+		Autorun_Enter(hwnd, _T("GameProgram"));
+		Autorun_Enter_Steam(hwnd);
+	}
 
 	return TRUE;
 }
@@ -344,12 +356,17 @@ static void NotifyMenu_OnProfileSCKey(HWND hwnd)
 
 static void NotifyMenu_OnAutorunGameProgramOpenFileName(HWND hwnd)
 {
-	Autorun_OpenFileName(hwnd, nullptr, _T("ƒQ[ƒ€ƒvƒƒOƒ‰ƒ€ (TH155.exe)\0TH155.exe\0"), _T("GameProgram"));
+	Autorun_OpenFileName(hwnd, nullptr, _T("ã‚²ãƒ¼ãƒ ãƒ—ãƒ­ã‚°ãƒ©ãƒ  (TH155.exe)\0TH155.exe\0"), _T("GameProgram"));
 }
 
 static void NotifyMenu_OnAutorunGameProgramFlipEnabled(HWND hwnd)
 {
 	Autorun_FlipEnabled(s_hPopupMenu, _T("GameProgram"), ID_AUTORUN_GAMEPROGRAM_FLIPENABLED);
+}
+
+static void NotifyMenu_OnAutorunSteamGameProgramFlipEnabled(HWND hwnd)
+{
+	Autorun_FlipEnabled(s_hPopupMenu, _T("SteamGame"), ID_AUTORUN_STEAM);
 }
 
 static void NotifyMenu_OnAutorunReportToolFlipEnabled(HWND hwnd)
@@ -361,7 +378,7 @@ static void NotifyMenu_OnAutorunReportToolOpenFileName(HWND hwnd)
 {
 	Minimal::ProcessHeapPath path;
 	TryGetModulePath(GetModuleHandle(nullptr), path);
-	Autorun_OpenFileName(hwnd, path, _T("•ñƒc[ƒ‹ (kkb_report.exe)\0kkb_report.exe\0"), _T("ReportTool"));
+	Autorun_OpenFileName(hwnd, path, _T("å¯¹æˆ˜è®°å½•ä¸Šä¼ å·¥å…·(ProfileUploader.exe)\0ProfileUploader.exe\0å¯¹æˆ˜è®°å½•ä¸Šä¼ å·¥å…· (kkb_report.exe)\0kkb_report.exe\0"), _T("ReportTool"));
 }
 
 
@@ -393,6 +410,7 @@ static void MainWindow_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotif
 	case ID_SHOW_SCORELINE: NotifyMenu_OnShowScoreLine(hwnd); break;
 	case ID_PROFSCKEY:		NotifyMenu_OnProfileSCKey(hwnd); break;
 	case ID_AUTORUN_GAMEPROGRAM_FLIPENABLED:	NotifyMenu_OnAutorunGameProgramFlipEnabled(hwnd); break;
+	case ID_AUTORUN_STEAM: NotifyMenu_OnAutorunSteamGameProgramFlipEnabled(hwnd); break;
 	case ID_AUTORUN_GAMEPROGRAM_OPENFILENAME:	NotifyMenu_OnAutorunGameProgramOpenFileName(hwnd); break;
 	case ID_AUTORUN_REPORTTOOL_FLIPENABLED:		NotifyMenu_OnAutorunReportToolFlipEnabled(hwnd); break;
 	case ID_AUTORUN_REPORTTOOL_OPENFILENAME:	NotifyMenu_OnAutorunReportToolOpenFileName(hwnd); break;

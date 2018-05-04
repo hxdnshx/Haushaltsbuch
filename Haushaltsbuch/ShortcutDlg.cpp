@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "Haushaltsbuch.hpp"
 #include "DlgCommon.hpp"
 #include "ShortcutDlg.hpp"
@@ -14,8 +14,8 @@ static const struct {
 	int cx;
 	LPCTSTR text;
 } s_listColumns[] = {
-	{ LVCFMT_LEFT,  100, _T("’ZkƒL[") },
-	{ LVCFMT_LEFT,  200, _T("ƒvƒƒtƒ@ƒCƒ‹") },
+	{ LVCFMT_LEFT,  100, _T("å¿«æ·é”®") },
+	{ LVCFMT_LEFT,  200, _T("è®°å½•æ–‡ä»¶å") },
 };
 
 static bool s_prevCall = false;
@@ -258,7 +258,7 @@ static BOOL CALLBACK ShortcutDialog_DlgProc(HWND hDlg, UINT Msg, WPARAM wParam, 
 int ShortcutDialog_ShowModeless(HWND hwndParent, LPVOID lpUser)
 {
 	INT_PTR ret = -1;
-	// Ä“ü‹Ö~
+	// å†å…¥ç¦æ­¢
 	if (!s_prevCall) {
 		s_prevCall = true;
 		::CreateDialogParam(

@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "DlgCommon.hpp"
 #include "Haushaltsbuch.hpp"
 #include "ScoreLine.hpp"
@@ -35,13 +35,13 @@ static void ScoreLineAppendDialog_OnOK(HWND hDlg)
 	SCORELINE_ITEM &item = *reinterpret_cast<SCORELINE_ITEM*>(::GetProp(hDlg, PROP_SCORELINE_ITEM));
 	int p1sid = ::SendDlgItemMessage(hDlg, IDC_COMBO_P1CHAR_SLAVE, CB_GETCURSEL, 0, 0);
 	if (p1sid < 0 || p1sid >= TH155AddrGetCharCount()) {
-		::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+		::MessageBox(hDlg, _T("é”™è¯¯çš„P1å‰¯æœºè§’è‰²ç¼–å·ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 	item.p1sid = p1sid;
 	int p2sid = ::SendDlgItemMessage(hDlg, IDC_COMBO_P2CHAR_SLAVE, CB_GETCURSEL, 0, 0);
 	if (p2sid < 0 || p2sid >= TH155AddrGetCharCount()) {
-		::MessageBox(hDlg, _T("ƒLƒƒƒ‰ƒNƒ^[w’è‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñ"), NULL, MB_OK | MB_ICONEXCLAMATION);
+		::MessageBox(hDlg, _T("é”™è¯¯çš„P2å‰¯æœºè§’è‰²ç¼–å·ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 	item.p2sid = p2sid;

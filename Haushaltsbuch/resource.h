@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 偱惗惉偝傟偨僀儞僋儖乕僪 僼傽僀儖丅
-// Haushaltsbuch.rc 偱巊梡
+// Microsoft Visual C++ 生成的包含文件。
+// 供 Haushaltsbuch.rc 使用
 //
 #define IDR_241                         1
 #define IDD_SCORELINE_QIB               101
@@ -61,6 +61,8 @@
 #define ID_GLOBAL_HIGHPRES_RATE         40036
 #define ID_GLOBAL_COLORFUL_RECORD       40037
 #define ID_GLOBAL_AUTOADJUSTVIEWRECT    40038
+#define ID_40040                        40040
+#define ID_AUTORUN_STEAM                40041
 #define ID_AUTORUN_GAMEPROGRAM_FLIPENABLED 41000
 #define ID_AUTORUN_GAMEPROGRAM_OPENFILENAME 41001
 #define ID_AUTORUN_REPORTTOOL_FLIPENABLED 41002
@@ -71,8 +73,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40040
+#define _APS_NEXT_RESOURCE_VALUE        131
+#define _APS_NEXT_COMMAND_VALUE         40042
 #define _APS_NEXT_CONTROL_VALUE         5038
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

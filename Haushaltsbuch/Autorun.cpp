@@ -23,6 +23,16 @@ void Autorun_CheckMenuItem(HMENU hmenu, LPCTSTR highProfileKey, UINT checkedMenu
 	::CheckMenuItem(hmenu, checkedMenuItem, ((enabled) ? (MF_CHECKED) : (MF_UNCHECKED)));
 }
 
+void Autorun_Enter_Steam(HWND hwnd)
+{
+	TCHAR enabledProfileKey[256];
+	Autorun_MakeProfileKey(enabledProfileKey, _countof(enabledProfileKey), _T("SteamGame"), _T("Enabled"));
+	UINT enabled = g_settings.ReadInteger(_T("Autorun"), enabledProfileKey, FALSE);
+	if (enabled) {
+		::ShellExecute(hwnd, _T("open"), _T("steam://run/716710"), NULL, NULL, SW_SHOWNORMAL);
+	}
+}
+
 void Autorun_Enter(HWND hwnd, LPCTSTR highProfileKey)
 {
 	TCHAR enabledProfileKey[256];
@@ -33,6 +43,15 @@ void Autorun_Enter(HWND hwnd, LPCTSTR highProfileKey)
 		Autorun_MakeProfileKey(fileNameProfileKey, _countof(fileNameProfileKey), highProfileKey, _T("FileName"));
 		TCHAR fileName[1025];
 		g_settings.ReadString(_T("Autorun"), fileNameProfileKey, _T(""), fileName, _countof(fileName));
+		if(fileName[0] == _T('.'))
+		{
+			//Relative Dir
+			TCHAR workPath[1025];
+			GetCurrentDirectory(_countof(workPath), workPath);
+			::lstrcatW(workPath, _T("\\"));
+			::lstrcatW(workPath, fileName);
+			::memcpy(fileName, workPath, 1025);
+		}
 		if (fileName[0] != '\0') {
 			TCHAR directoryName[1025];
 			::lstrcpyn(directoryName, fileName, _countof(directoryName));

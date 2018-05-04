@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "Haushaltsbuch.hpp"
 #include "DlgCommon.hpp"
 #include "ShortcutEditDlg.hpp"
@@ -25,7 +25,7 @@ static void ShortcutEditDialog_OnOK(HWND hDlg)
 {
 	int sc = ::SendDlgItemMessage(hDlg, IDC_PROFSCKEY, HKM_GETHOTKEY, 0, 0);
 	if (sc == 0) {
-		::MessageBox(hDlg, _T("’ZkƒL[‚ğİ’è‚µ‚Ä‚­‚¾‚³‚¢"), NULL, MB_OK | MB_ICONEXCLAMATION);
+		::MessageBox(hDlg, _T("è¯·è®¾ç½®ä¸€ä¸ªå¿«æ·é”®ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 	BYTE key = LOBYTE(sc);
@@ -36,7 +36,7 @@ static void ShortcutEditDialog_OnOK(HWND hDlg)
 		bool unique;
 		::SendMessage(::GetParent(hDlg), WM_APP, scShortcutKey, (LPARAM)&unique);
 		if (!unique) {
-			::MessageBox(hDlg, _T("Šù‚É“o˜^‚³‚ê‚Ä‚¢‚éƒL[‚Å‚·"), NULL, MB_OK | MB_ICONEXCLAMATION);
+			::MessageBox(hDlg, _T("è¿™ä¸ªå¿«æ·é”®å·²ç»è¢«ä½¿ç”¨ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -45,11 +45,11 @@ static void ShortcutEditDialog_OnOK(HWND hDlg)
 	TCHAR scPath[1025];
 	::GetDlgItemText(hDlg, IDC_PROFSCPATH, scPath, _countof(scPath));
 	if (scPath[0] == 0) {
-		::MessageBox(hDlg, _T("ƒvƒƒtƒ@ƒCƒ‹ƒpƒX‚ğw’è‚µ‚Ä‚­‚¾‚³‚¢"), NULL, MB_OK | MB_ICONEXCLAMATION);
+		::MessageBox(hDlg, _T("è¯·é€‰æ‹©ä¸€ä¸ªè®°å½•æ–‡ä»¶ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 	if (!::PathFileExists(scPath)) {
-		::MessageBox(hDlg, _T("‘¶İ‚·‚éƒpƒX‚ğw’è‚µ‚Ä‚­‚¾‚³‚¢"), NULL, MB_OK | MB_ICONEXCLAMATION);
+		::MessageBox(hDlg, _T("è¯·é€‰æ‹©ä¸€ä¸ªå­˜åœ¨çš„è®°å½•æ–‡ä»¶ã€‚"), NULL, MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 	::lstrcpy(g_scPath, scPath);

@@ -6,7 +6,7 @@
 #include <lmcons.h>
 #include <Winternl.h>
 #include "TH155AddrDef.hpp"
-#include "stdio.h"
+//#include "stdio.h"
 
 #define MINIMAL_USE_PROCESSHEAPSTRING
 #define MINIMAL_USE_PROCESSHEAPARRAY
@@ -234,7 +234,7 @@ static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
 							//int bsize = strlen(path) + itemLen + 30;
 							{
 								//char* newpath = new char[1500];
-								fprintf_s(fp, "%s %s 0x%x %x %x \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), titemVal);
+								//fprintf_s(fp, "%s %s 0x%x %x %x \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), titemVal);
 							}
 						}
 						if (((titemType & 0xFFFFF) == 0x20 || (titemType & 0xFFFFF) == 0x8000) && level == curlevel)//Table 则继续向下遍历
@@ -320,7 +320,7 @@ static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
 									//int bsize = strlen(path) + itemLen + 30;
 									{
 										//char* newpath = new char[1500];
-										fprintf_s(fp, "%s %s %x %x \n", path, itemStr, (titemType & 0xFFFFF), titemVal);
+										//fprintf_s(fp, "%s %s %x %x \n", path, itemStr, (titemType & 0xFFFFF), titemVal);
 									}
 								}
 								if (((titemType & 0xFFFFF) == 0x20 || (titemType & 0xFFFFF) == 0x8000) && level == curlevel)//Table 则继续向下遍历
@@ -529,10 +529,10 @@ LRESULT CALLBACK ipcWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		return RTChildToStringProc(wparam) != false;
 	case WM_RTCHILDTOSTRING + 1:
 	{
-		FILE* fp;
-		fp = fopen("result.txt", "w");
-		EnumRTChildProc("", 0, fp);
-		fclose(fp);
+		//FILE* fp;
+		//fp = fopen("result.txt", "w");
+		//EnumRTChildProc("", 0, fp);
+		//fclose(fp);
 	}
 	}
 	return DefWindowProc(hwnd, msg, wparam, lparam);

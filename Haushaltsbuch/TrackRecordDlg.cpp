@@ -1,4 +1,4 @@
-#include "pch.hpp"
+Ôªø#include "pch.hpp"
 #include "Haushaltsbuch.hpp"
 #include "DlgCommon.hpp"
 #include "TrackRecorddlg.hpp"
@@ -16,15 +16,15 @@ static const struct {
 	int cx;
 	LPCTSTR text;
 } s_listColumns[] = {
-	{ LVCFMT_LEFT,	130,	_T("É^ÉCÉÄÉXÉ^ÉìÉv") },
-	{ LVCFMT_LEFT,	100,	_T("1PÉvÉçÉt") },
-	{ LVCFMT_LEFT,	60,		_T("1PÉ}ÉXÉ^Å[") },
-	{ LVCFMT_LEFT,	80,		_T("1PÉXÉåÅ[Éu") },
-	{ LVCFMT_RIGHT,	40,		_T("1Pèü") },
-	{ LVCFMT_LEFT,	100,	_T("2PÉvÉçÉt") },
-	{ LVCFMT_LEFT,	60,		_T("2PÉ}ÉXÉ^Å[") },
-	{ LVCFMT_LEFT,	80,		_T("2PÉXÉåÅ[Éu") },
-	{ LVCFMT_RIGHT, 40,		_T("2Pèü") },
+	{ LVCFMT_LEFT,	130,	_T("Êó∂Èó¥") },
+	{ LVCFMT_LEFT,	100,	_T("1PÂêçÂ≠ó") },
+	{ LVCFMT_LEFT,	60,		_T("1P‰∏ªÊú∫") },
+	{ LVCFMT_LEFT,	80,		_T("1PÂâØÊú∫") },
+	{ LVCFMT_RIGHT,	40,		_T("1PËÉú") },
+	{ LVCFMT_LEFT,	100,	_T("2PÂêçÂ≠ó") },
+	{ LVCFMT_LEFT,	60,		_T("2P‰∏ªÊú∫") },
+	{ LVCFMT_LEFT,	80,		_T("2PÂâØÊú∫") },
+	{ LVCFMT_RIGHT, 40,		_T("2PËÉú") },
 };
 
 static LRESULT TrackRecordView_OnCustomDraw(HWND hwnd, LPNMLVCUSTOMDRAW lpnlvCustomDraw)

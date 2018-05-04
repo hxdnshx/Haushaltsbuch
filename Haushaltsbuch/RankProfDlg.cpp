@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include "Haushaltsbuch.hpp"
 #include "QIBSettings.hpp"
 #include "DlgCommon.hpp"
@@ -17,11 +17,11 @@
 
 
 SLVCOLUMN s_listColumns[] = {
-	{ LVCFMT_LEFT,  100, _T("‘Šè"),	SLVSORT_STRING },
-	{ LVCFMT_RIGHT,  55, _T("‘Îí”"),	SLVSORT_INTEGER },
-	{ LVCFMT_RIGHT,  55, _T("Ÿ"),		SLVSORT_INTEGER },
-	{ LVCFMT_RIGHT,  55, _T("•‰"),		SLVSORT_INTEGER },
-	{ LVCFMT_RIGHT,  55, _T("Ÿ—¦"),	SLVSORT_INTEGER }
+	{ LVCFMT_LEFT,  100, _T("å¯¹æ‰‹"),	SLVSORT_STRING },
+	{ LVCFMT_RIGHT,  55, _T("å¯¹æˆ˜æ€»æ•°"),	SLVSORT_INTEGER },
+	{ LVCFMT_RIGHT,  55, _T("èƒœ"),		SLVSORT_INTEGER },
+	{ LVCFMT_RIGHT,  55, _T("è´Ÿ"),		SLVSORT_INTEGER },
+	{ LVCFMT_RIGHT,  55, _T("èƒœç‡"),	SLVSORT_INTEGER }
 };
 
 static void RankProfDialog_QueryCallback(SCORELINE_ITEM *item, void *user)
@@ -49,14 +49,14 @@ static void RankProfDialog_QueryCallback(SCORELINE_ITEM *item, void *user)
 	::wsprintf(text, _T("%d"), item->p2win);
 	ListView_SetItem(listWnd, &lvitem);
 
-	// Ÿ—¦
+	// å‹ç‡
 	int sum = item->p1win + item->p2win;
 	int winningRate = ::MulDiv(item->p1win, g_winningRatePrecision, sum ? sum : 1);
 	lvitem.iSubItem = 4;
 	::wsprintf(text, (g_highPrecisionRateEnabled ? _T("%d.%01d%%") : _T("%d%%")), winningRate / g_winningRateFp, winningRate % g_winningRateFp);
 	ListView_SetItem(listWnd, &lvitem);
 
-	// ƒpƒ‰ƒ[ƒ^‚ÌŸ—¦ƒtƒB[ƒ‹ƒh‚ğXV
+	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å‹ç‡ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚’æ›´æ–°
 	lvitem.mask = LVIF_PARAM;
 	lvitem.iSubItem = 0;
 	ListView_GetItem(listWnd, &lvitem);
@@ -143,7 +143,7 @@ static BOOL RankProfDialog_InitSysMenu(HWND hDlg)
 {
 	HMENU hSysMenu = ::GetSystemMenu(hDlg, FALSE);
 	int itemIndex = 0;
-	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_REFLESH, _T("ÅV‚Ìî•ñ‚ÉXV"));
+	::InsertMenu(hSysMenu, itemIndex++, MF_STRING | MF_BYPOSITION, UC_REFLESH, _T("åˆ·æ–°"));
 	::InsertMenu(hSysMenu, itemIndex++, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
 	return TRUE;
 }
@@ -169,7 +169,7 @@ static BOOL RankProfDialog_OnInitDialog(HWND hDlg, HWND hwndFocus, LPARAM lParam
 	}
 	::SetWindowLongPtr(hDlg, GWL_USERDATA, reinterpret_cast<LONG_PTR>(pFilterDesc));
 
-	::SetWindowText(hDlg, _T("‘Šèƒvƒƒtƒ@ƒCƒ‹"));
+	::SetWindowText(hDlg, _T("å¯¹æ‰‹åˆ—è¡¨"));
 	RankProfDialog_InitSysMenu(hDlg);
 	RankProfDialog_InitListView(hDlg, *pFilterDesc);
 
