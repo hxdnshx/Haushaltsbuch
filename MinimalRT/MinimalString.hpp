@@ -2,6 +2,8 @@
 
 #include "MinimalAllocator.hpp"
 
+#define SHIFT_JIS 932
+
 namespace Minimal {
 
 namespace MinimalString {
@@ -208,11 +210,11 @@ bool ToUCS2(MinimalStringT<wchar_t> &dest, LPCSTR source)
 {
 	int inLen = ::lstrlenA(source);
 	int outLen = ::MultiByteToWideChar(
-		CP_ACP, 0, source, inLen, NULL, 0); 
+		SHIFT_JIS, 0, source, inLen, NULL, 0); 
 	if (outLen == 0) return false;
 	dest.Grow(outLen + 1);
 	int convLen = ::MultiByteToWideChar(
-		CP_ACP, 0, source, inLen, dest.GetRaw(), outLen);
+		SHIFT_JIS, 0, source, inLen, dest.GetRaw(), outLen);
 	if (outLen != convLen) return false;
 	dest.GetRaw()[outLen] = 0;
 	dest.Repair();
@@ -273,13 +275,13 @@ bool ToANSI(MinimalStringT<char> &dest, LPCWSTR source)
 {
 	int sourceLen = ::lstrlenW(source);
 	int outLen = ::WideCharToMultiByte(
-		CP_ACP, 0,
+		SHIFT_JIS, 0,
 		source, sourceLen,
 		NULL, 0, NULL, NULL); 
 	if (outLen == 0) return false;
 	dest.Grow(outLen + 1);
 	int convLen = ::WideCharToMultiByte(
-		CP_ACP, 0,
+		SHIFT_JIS, 0,
 		source, sourceLen,
 		dest, outLen, NULL, NULL); 
 	if (outLen != convLen) return false;
