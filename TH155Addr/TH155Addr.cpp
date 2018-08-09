@@ -39,6 +39,7 @@
 
 #define WM_FINDRTCHILD (WM_APP + 0)
 #define WM_RTCHILDTOSTRING (WM_APP + 1)
+#define WM_WRITERTCHILD (WM_APP + 3)
 
 #pragma data_seg(".TH155HK")
 HHOOK hookHandle = nullptr;
@@ -396,6 +397,157 @@ static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
 #endif
 	return true;
 }
+
+static bool ModifyRTChildProc()
+{
+	DWORD_PTR items;
+	DWORD_PTR itemVal;
+	DWORD_PTR itemVal2;
+	char  itemStr[SQSTRING_LIMIT];
+	DWORD itemType;
+	DWORD itemNum;
+	LPVOID item_Addr = nullptr;
+	DWORD itemLen;
+	DWORD itemIndex;
+	DWORD readSize;
+	BOOL ret;
+	DWORD j;
+
+	//if (GetAsyncKeyState(VK_F1) < 0) __asm mov ds:[0], 0xdeadbeef
+
+	HANDLE curProc = GetCurrentProcess();
+	// CoreBase から table を読み込む
+	ret = ::ReadProcessMemory(curProc, (LPVOID)((DWORD_PTR)GetModuleHandle(nullptr) + TH155CoreBase), &itemVal, sizeof itemVal, &readSize);
+	if (!ret) return false;
+	ret = ::ReadProcessMemory(curProc, (LPVOID)((DWORD_PTR)itemVal + 0x34), &itemVal, sizeof itemVal, &readSize);
+	if (!ret) return false;
+
+	itemType = 0x20;
+
+	StringSplitter tokenizer(ipcData.str.val, '/');
+	LPCSTR pathToken;
+	while (pathToken = tokenizer.Next()) {
+		switch (itemType & 0xFFFFF) {
+		case 0x20:	// TABLE
+					// Table の情報を読み込む
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x20), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x24), &itemNum, sizeof itemNum, &readSize);
+			if (!ret) return false;
+			// Table items を探索
+			for (j = 0; j < itemNum; ++j) {
+				// Table item key を読み込む
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x08), &itemType, sizeof itemType, &readSize);
+				if (!ret) return false;
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x0c), &itemVal, sizeof itemVal, &readSize);
+				if (!ret) return false;
+				//  Table item key が文字列のときだけ受け付ける
+				if ((itemType & 0xFFFFF) == 0x10) {
+					//  Table item key を文字列として読み込む
+					ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x14), &itemLen, sizeof itemLen, &readSize);
+					if (!ret) return false;
+					// 常識的な長さの文字列だけ受け付ける
+					if (0 < itemLen && itemLen < SQSTRING_LIMIT) {
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x1C), itemStr, itemLen, &readSize);
+						if (!ret) return false;
+						itemStr[itemLen] = 0;
+						// Table item key の値が path のトークンと一致したら table item value を読み込む
+						if (::lstrcmpA(itemStr, pathToken) == 0) {
+							ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x00), &itemType, sizeof itemType, &readSize);
+							if (!ret) return false;
+							ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x04), &itemVal, sizeof itemVal, &readSize);
+							if (!ret) return false;
+							item_Addr = (LPVOID)(items + j * 0x14 + 0x04);
+							break;
+						}
+					}
+				}
+			}
+			if (j == itemNum) return false;
+			break;
+		case 0x40:	// ARRAY
+					// Array item の先頭アドレスと item 数を読み込む
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x18), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x1C), &itemNum, sizeof itemNum, &readSize);
+			if (!ret) return false;
+			// Path のトークンを Array item の index と見なして範囲チェック
+			itemIndex = StrToIntA(pathToken);
+			if (itemNum <= itemIndex) return false;
+			// Array item を読み込む
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + itemIndex * 0x08 + 0x00), &itemType, sizeof itemType, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + itemIndex * 0x08 + 0x04), &itemVal, sizeof itemVal, &readSize);
+			if (!ret) return false;
+			item_Addr = (LPVOID)(items + itemIndex * 0x08 + 0x04);
+			break;
+		case 0x8000:	// INSTANCE
+						// Instance members の情報を読み込む
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x1C), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + 0x18), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + 0x24), &itemNum, sizeof itemNum, &readSize);
+			if (!ret) return false;
+			ret = ::ReadProcessMemory(curProc, (LPVOID)(items + 0x20), &items, sizeof items, &readSize);
+			if (!ret) return false;
+			// Instance members を探索
+			for (j = 0; j < itemNum; ++j) {
+				// Instance member metadata value を読み込む
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x00), &itemType, sizeof itemType, &readSize);
+				if (!ret) return false;
+				ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x04), &itemVal2, sizeof itemVal, &readSize);
+				if (!ret) return false;
+				// Instance member metadata value が有効なときだけ受け付ける
+				if ((itemType & 0xFFFFF) == 0x02) {
+					// Instance member metadata value から instance member type と instance member index を抽出
+					DWORD memberType = itemVal2 & 0xFF000000;
+					DWORD memberIndex = itemVal2 & 0x00FFFFFF;
+					// Instance member type が有効なときだけ受け付ける
+					if (memberType == 0x02000000) {
+						// Instance member metadata key を読み込む
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x08), &itemType, sizeof itemType, &readSize);
+						if (!ret) return false;
+						ret = ::ReadProcessMemory(curProc, (LPVOID)(items + j * 0x14 + 0x0c), &itemVal2, sizeof itemVal, &readSize);
+						if (!ret) return false;
+						// Instance member metadata key が文字列のときだけ受け付ける
+						if ((itemType & 0xFFFFF) == 0x10) {
+							//  Instance member metadata key を文字列として読み込む
+							ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal2 + 0x14), &itemLen, sizeof itemLen, &readSize);
+							if (!ret) return false;
+							// 常識的な長さの文字列だけ受け付ける
+							if (0 < itemLen && itemLen < SQSTRING_LIMIT) {
+								ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal2 + 0x1C), itemStr, itemLen, &readSize);
+								if (!ret) return false;
+								itemStr[itemLen] = 0;
+								// Instance member metadata key の値が path のトークンと一致したら instance member value を読み込む
+								if (::lstrcmpA(itemStr, pathToken) == 0) {
+									ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x00), &itemType, sizeof itemType, &readSize);
+									if (!ret) return false;
+									ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x04), &itemVal, sizeof itemVal, &readSize);
+									if (!ret) return false;
+									item_Addr = (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x04);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (j == itemNum) return false;
+			break;
+		}
+	}
+	if (ipcData.var.type != (itemType & 0xFFFFF))
+		return false;
+	if (item_Addr == nullptr)
+		return false;
+	//ipcData.var.type = itemType;
+	//ipcData.var.val = itemVal;
+	::WriteProcessMemory(curProc, item_Addr, &ipcData.var.val, sizeof(itemVal), &readSize);
+	return true;
+}
+
 // CoreBase class instance にある SQVM instance の Root Table から 指定されたパスの item value を fetch
 static bool FindRTChildProc()
 {
@@ -574,6 +726,10 @@ LRESULT CALLBACK ipcWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		fclose(fp);
 #endif
 	}
+	case WM_WRITERTCHILD:
+	{
+		return ModifyRTChildProc() != false;
+	}
 	}
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
@@ -623,6 +779,22 @@ LRESULT CALLBACK TH155HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 	}
 	return CallNextHookEx(hookHandle, nCode, wParam, lParam);
+}
+
+static bool SetRTChild(LPCSTR path, DWORD retType, DWORD val)
+{
+	if (!IPCWindowExists()) return false;
+	DWORD pathLen = lstrlenA(path) + 1;
+	if (!(0 < pathLen && pathLen < SQSTRING_LIMIT)) return false;
+	HANDLE ipcLock = CreateMutex(nullptr, FALSE, TH155AddrIPCMutex);
+	WaitForSingleObject(ipcLock, INFINITE);
+	::RtlCopyMemory(ipcData.str.val, path, pathLen);
+	::RtlCopyMemory(&ipcData.var.type, &retType, sizeof(ipcData.var.type));
+	::RtlCopyMemory(&ipcData.var.val, &val, sizeof(ipcData.var.val));
+	LRESULT ret = SendMessage(ipcWindow, WM_WRITERTCHILD, 0, 0);
+	ReleaseMutex(ipcLock);
+	CloseHandle(ipcLock);
+	return ret != FALSE;
 }
 
 static bool FindRTChild(LPCSTR path, DWORD &retType, DWORD &retVal)
@@ -894,6 +1066,12 @@ extern "C"
 TH155STATE WINAPI TH155AddrGetState()
 {
 	return TH155State;
+}
+
+extern "C"
+int WINAPI TH155SetRTChildInt(LPCSTR path, DWORD value)
+{
+	return ::SetRTChild(path, 0x02, value);
 }
 
 extern "C"
