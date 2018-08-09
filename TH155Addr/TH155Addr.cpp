@@ -13,6 +13,9 @@
 #include "MinimalPath.hpp"
 #include "MinimalIniFile.hpp"
 #include "MinimalArray.hpp"
+#ifdef  _DEBUG
+#include <stdio.h>
+#endif
 
 #define TH155_APIVERSION 1
 
@@ -164,6 +167,7 @@ public:
 
 static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
 {
+#ifdef  _DEBUG
 	DWORD_PTR items;
 	DWORD_PTR itemVal;
 	DWORD_PTR titemVal;
@@ -233,8 +237,24 @@ static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
 						{
 							//int bsize = strlen(path) + itemLen + 30;
 							{
-								//char* newpath = new char[1500];
-								//fprintf_s(fp, "%s %s 0x%x %x %x \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), titemVal);
+								if((titemType & 0xFFFFF) == 0x10)
+								{
+									char strbuf[256];
+									memset(strbuf, 0, sizeof(strbuf));
+									DWORD strLen;
+									DWORD readSize;
+									BOOL ret;
+									HANDLE curProc = GetCurrentProcess();
+
+									ret = ::ReadProcessMemory(curProc, (LPVOID)(titemVal + 0x14), &strLen, sizeof strLen, &readSize);
+
+									ret = ::ReadProcessMemory(curProc, (LPVOID)(titemVal + 0x1C), strbuf, strLen, &readSize);
+
+									strbuf[readSize] = '\0';
+									fprintf_s(fp, "%s %s 0x%x %x %s \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), strbuf);
+								}
+								else
+									fprintf_s(fp, "%s %s 0x%x %x %x \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), titemVal);
 							}
 						}
 						if (((titemType & 0xFFFFF) == 0x20 || (titemType & 0xFFFFF) == 0x8000) && level == curlevel)//Table 则继续向下遍历
@@ -317,10 +337,27 @@ static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
 								ret = ::ReadProcessMemory(curProc, (LPVOID)(itemVal + 0x2C + memberIndex * 0x08 + 0x04), &titemVal, sizeof itemVal, &readSize);
 								if (level == curlevel)
 								{
+
 									//int bsize = strlen(path) + itemLen + 30;
 									{
-										//char* newpath = new char[1500];
-										//fprintf_s(fp, "%s %s %x %x \n", path, itemStr, (titemType & 0xFFFFF), titemVal);
+										if ((titemType & 0xFFFFF) == 0x10)
+										{
+											char strbuf[256];
+											memset(strbuf, 0, sizeof(strbuf));
+											DWORD strLen;
+											DWORD readSize;
+											BOOL ret;
+											HANDLE curProc = GetCurrentProcess();
+
+											ret = ::ReadProcessMemory(curProc, (LPVOID)(titemVal + 0x14), &strLen, sizeof strLen, &readSize);
+
+											ret = ::ReadProcessMemory(curProc, (LPVOID)(titemVal + 0x1C), strbuf, strLen, &readSize);
+
+											strbuf[readSize] = '\0';
+											fprintf_s(fp, "%s %s 0x%x %x %s \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), strbuf);
+										}
+										else
+											fprintf_s(fp, "%s %s 0x%x %x %x \n", path, itemStr, (DWORD_PTR)(items + j * 0x14 + 0x04), (titemType & 0xFFFFF), titemVal);
 									}
 								}
 								if (((titemType & 0xFFFFF) == 0x20 || (titemType & 0xFFFFF) == 0x8000) && level == curlevel)//Table 则继续向下遍历
@@ -356,6 +393,7 @@ static bool EnumRTChildProc(LPCSTR path, int level, FILE* fp = nullptr)
 	}
 	ipcData.var.type = itemType;
 	ipcData.var.val = itemVal;
+#endif
 	return true;
 }
 // CoreBase class instance 偵偁傞 SQVM instance 偺 Root Table 偐傜 巜掕偝傟偨僷僗偺 item value 傪 fetch
@@ -529,10 +567,12 @@ LRESULT CALLBACK ipcWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		return RTChildToStringProc(wparam) != false;
 	case WM_RTCHILDTOSTRING + 1:
 	{
-		//FILE* fp;
-		//fp = fopen("result.txt", "w");
-		//EnumRTChildProc("", 0, fp);
-		//fclose(fp);
+#ifdef  _DEBUG
+		FILE* fp;
+		fopen_s(&fp, "result.txt", "w");
+		EnumRTChildProc("", 0, fp);
+		fclose(fp);
+#endif
 	}
 	}
 	return DefWindowProc(hwnd, msg, wparam, lparam);
